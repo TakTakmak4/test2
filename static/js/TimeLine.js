@@ -1,11 +1,19 @@
 TimeLine = function () {
     this.timeline = null;
+    this.selectimg = null;
     this.itemlist = {};
     this.items = new vis.DataSet(this.itemlist);
 };
 
-TimeLine.prototype.onSelect = function (properties) {
-    console.log('onSelect',properties);
+TimeLine.prototype.setSelectImg = function(_selectimg){
+    this.selectimg = _selectimg;
+}
+
+TimeLine.prototype.onSelect = function (_this,properties) {
+    //console.log('onSelect',properties);
+    var trgtime = properties.items[0];
+    var that = _this;
+    that.selectimg.viewSelectImg(trgtime);
 };
 
 TimeLine.prototype.makeimgDom = function(timestr){
@@ -52,7 +60,10 @@ TimeLine.prototype.viewTimeLine = function () {
     this.timeline = new vis.Timeline(container, this.items, options);
 
     var that = this;
-    this.timeline.on('select', this.onSelect);
+    //this.timeline.on('select', this.onSelect);
+    this.timeline.on('select', function (properties) {
+        that.onSelect(that,properties);
+    });
     //this.timeline.on('rangechanged', this.changeRange);
     this.timeline.on('rangechanged', function (properties) {
         that.changeRange(that,properties);

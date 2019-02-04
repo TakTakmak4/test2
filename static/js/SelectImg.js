@@ -1,24 +1,28 @@
 SelectImg = function () {
-    this.timeline = null;
-    this.itemlist = {};
-    this.items = new vis.DataSet(this.itemlist);
+    this.momtrg = null;
+    this.timer = null;
+    this.count = 0;
 };
 
-SelectImg.prototype.viewTimeLine = function () {
-    var container = document.getElementById('visualization');
-    var momnow = moment();
-    var momstart = moment(momnow);
-    momstart.add(-2,'hours');
-    var sttimestr = momstart.format("YYYY-MM-DDTHH:00:00");
-    var endtimestr = momnow.format("YYYY-MM-DDTHH:mm:ss");
-    var options = {start: sttimestr,end:endtimestr};
-    this.timeline = new vis.Timeline(container, this.items, options);
+SelectImg.prototype.makeImgPath = function(timestr){
+    var imgpath = "/static/data/imagedata/"+timestr+".jpg";
+}
 
+SelectImg.prototype.updateImg = function(_this){
+    var that = _this;
+    var momimg = moment(that.momtrg);
+    var addnum = that.count % 10;
+    momimg.add(addnum,'minutes');
+    var ftimestr = momimg.format("YYYYMMDDHHmmss");
+    var imgpath = that.makeImgPath(ftimestr);
+    console.log(imgpath);
+    that.count++;
+}
+
+SelectImg.prototype.viewSelectImg = function (starttimestr) {
     var that = this;
-    this.timeline.on('select', this.onSelect);
-    //this.timeline.on('rangechanged', this.changeRange);
-    this.timeline.on('rangechanged', function (properties) {
-        that.changeRange(that,properties);
-    });
+    var container = document.getElementById('selectimg');
+    that.momtrg = moment(starttimestr,"YYYYMMDDHHmmss");
+    timer1 = setInterval(that.updateImg, 1000, that);
     return "TEST";
 };
