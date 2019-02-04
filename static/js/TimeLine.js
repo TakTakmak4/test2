@@ -1,45 +1,61 @@
 TimeLine = function () {
     this.timeline = null;
+    this.itemlist = {};
+    this.items = new vis.DataSet(this.itemlist);
 };
 
 TimeLine.prototype.onSelect = function (properties) {
-    console.log(properties);
+    console.log('onSelect',properties);
 };
 
-TimeLine.prototype.getItems = function(){
-    var momnow = moment();
-    var momstart = moment(momnow);
+TimeLine.prototype.makeimgDom = function(timestr){
+    var imgpath = "/static/data/imagedata/20190126173904/000001.jpg";
+    var imgdom = "<img width=\"100\" higth=\"100\" src=\""+imgpath+"\">";
+    return imgdom;
+}
+
+TimeLine.prototype.changeRange = function (_this,properties) {
+    var that = _this;
+    var momstart = moment(properties.start);
+    var momend = moment(properties.end);
+    momstart.add(-1,'hours');
     momstart.set({'hours':0,'minute':0,'second':0,'millisecond':0});
-    var diffmin = momnow.diff(momstart,'minutes');
+    momend.add(1,'hours');
+    var diffmin = momend.diff(momstart,'minutes');
     var itemlist = new Array();
     for(var tm = 0; tm < Math.floor(diffmin/10); tm++)
     {
         var datatime = moment(momstart);
         datatime.add(tm*10,'minutes');
-        var sttimestr = datatime.format("YYYY-MM-DDTHH:mm:SS");
-        var idstr = datatime.format("YYYYMMDDHHmmSS");
-        var itm = {id:idstr,content:"<div>Memo</div>", start: sttimestr};
+        var sttimestr = datatime.format("YYYY-MM-DDTHH:mm:ss");
+        var idstr = datatime.format("YYYYMMDDHHmmss");
+        var contentstr = that.makeimgDom(idstr);
+        //console.log(sttimestr);
+        var itm = {id:idstr,content:contentstr, start: sttimestr};
         itemlist.push(itm);
     }
+    that.itemlist = itemlist;
+    that.items = new vis.DataSet(that.itemlist);
+    that.timeline.setItems(that.items);
     return(itemlist);
 };
 
+
 TimeLine.prototype.viewTimeLine = function () {
-    var itemlist = this.getItems();
-    var items = new vis.DataSet(itemlist);
-    // DOM element where the Timeline will be attached
     var container = document.getElementById('visualization');
     var momnow = moment();
-    momnow.add(-2,'hours');
-    var sttimestr = momnow.format("YYYY-MM-DDTHH:00:00");
-    var options = {start: sttimestr};
-    this.timeline = new vis.Timeline(container, items, options);
+    var momstart = moment(momnow);
+    momstart.add(-2,'hours');
+    var sttimestr = momstart.format("YYYY-MM-DDTHH:00:00");
+    var endtimestr = momnow.format("YYYY-MM-DDTHH:mm:ss");
+    var options = {start: sttimestr,end:endtimestr};
+    this.timeline = new vis.Timeline(container, this.items, options);
+
+    var that = this;
     this.timeline.on('select', this.onSelect);
+    //this.timeline.on('rangechanged', this.changeRange);
     this.timeline.on('rangechanged', function (properties) {
-        console.log('rangechanged', properties);
-    });
-    this.timeline.on('click', function (properties) {
-        console.log('click', properties);
+        that.changeRange(that,properties);
     });
     return "TEST";
 };
